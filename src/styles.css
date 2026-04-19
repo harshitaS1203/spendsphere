@@ -445,11 +445,11 @@ a {
 
 .form-control,
 .form-select {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background-color: var(--bg) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 10px;
   padding: 12px 16px;
-  color: var(--text);
+  color: var(--text) !important;
 }
 
 .form-control:focus,
