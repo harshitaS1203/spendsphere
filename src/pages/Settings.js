@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Shell from "../components/Shell";
+import { useCurrency } from "../CurrencyContext";
 
 export default function Settings() {
   const [theme, setTheme] = useState(localStorage.getItem("spendsphere_theme") || "light");
-  const [currency, setCurrency] = useState(localStorage.getItem("spendsphere_currency") || "INR");
+  const { currency, setCurrency } = useCurrency();
   const [emailDigest, setEmailDigest] = useState(true);
   const [pushNotif, setPushNotif] = useState(false);
 
@@ -14,7 +15,6 @@ export default function Settings() {
   }
   function applyCurrency(c) {
     setCurrency(c);
-    localStorage.setItem("spendsphere_currency", c);
   }
 
   return (
@@ -72,7 +72,7 @@ export default function Settings() {
 
           <div className="col-md-7">
             <div className="card-soft">
-              <h3 style={{ fontWeight: 700, marginBottom: 16 }}>💱 Currency</h3>
+              <h3 style={{ fontWeight: 700, marginBottom: 16 }}>Currency</h3>
               <select className="form-select" value={currency} onChange={(e) => applyCurrency(e.target.value)}>
                 <option value="INR">INR — Indian Rupee (₹)</option>
                 <option value="USD">USD — US Dollar ($)</option>
@@ -90,7 +90,7 @@ export default function Settings() {
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3"
                 style={{ borderBottom: "1px solid var(--border)" }}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>📧 Email Digest</div>
+                  <div style={{ fontWeight: 600 }}>Email Digest</div>
                   <div className="text-muted small">Weekly summary of all activities</div>
                 </div>
                 <label className="toggle-switch">
@@ -100,7 +100,7 @@ export default function Settings() {
               </div>
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <div style={{ fontWeight: 600 }}>🔔 Push Notifications</div>
+                  <div style={{ fontWeight: 600 }}>Push Notifications</div>
                   <div className="text-muted small">Real-time alerts for bill additions</div>
                 </div>
                 <label className="toggle-switch">

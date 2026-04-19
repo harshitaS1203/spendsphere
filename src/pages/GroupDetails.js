@@ -1,12 +1,57 @@
-import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Shell, { MemberDot } from "../components/Shell";
-import { getGroups, GROUP_DETAILS, fmt } from "../data/store";
+import { getGroups, saveGroups, GROUP_DETAILS, USERS } from "../data/store";
+import { useCurrency } from "../CurrencyContext";
 
 export default function GroupDetails() {
   const { id } = useParams();
-  const groups = getGroups();
+  const { fmt } = useCurrency();
+  const navigate = useNavigate();
+  const [groups, setGroups] = useState(getGroups());
+  const [newMemberName, setNewMemberName] = useState("");
+  
   const group = groups.find((g) => g.id === id) || groups[0];
   const details = GROUP_DETAILS[id] || { expenses: [], settlements: [] };
+
+  const handleDeleteGroup = () => {
+    if (window.confirm(`Are you sure you want to delete ${group.name}?`)) {
+      const newGroups = groups.filter(g => g.id !== group.id);
+      saveGroups(newGroups);
+      navigate("/groups");
+    }
+  };
+
+  const handleRemoveMember = (member) => {
+    if (window.confirm(`Are you sure you want to remove ${member}?`)) {
+      const newGroups = groups.map(g => {
+        if (g.id === group.id) {
+          return { ...g, members: g.members.filter(m => m !== member) };
+        }
+        return g;
+      });
+      setGroups(newGroups);
+      saveGroups(newGroups);
+    }
+  };
+
+  const handleAddMember = (e) => {
+    e.preventDefault();
+    if (!newMemberName.trim()) return;
+    if (group.members.includes(newMemberName.trim())) {
+      alert("Member already in group!");
+      return;
+    }
+    const updatedGroups = groups.map(g => {
+      if (g.id === group.id) {
+        return { ...g, members: [...g.members, newMemberName.trim()] };
+      }
+      return g;
+    });
+    setGroups(updatedGroups);
+    saveGroups(updatedGroups);
+    setNewMemberName("");
+  };
 
   return (
     <Shell>
@@ -23,6 +68,7 @@ export default function GroupDetails() {
             <p className="page-sub mb-0">{group.members.length} members · Detailed breakdown</p>
           </div>
           <div className="ms-auto d-flex gap-2">
+            <button className="btn-outline-purple" onClick={handleDeleteGroup} style={{ color: "var(--danger)", borderColor: "var(--danger)" }}>Delete Group</button>
             <Link to={`/groups/${group.id}/summary`}><button className="btn-outline-purple">View Summary</button></Link>
             <button className="btn-green">Settle Up</button>
           </div>
@@ -30,18 +76,57 @@ export default function GroupDetails() {
 
         <div className="card-soft mb-4">
           <h4 style={{ fontWeight: 700, marginBottom: 16 }}>Members</h4>
-          {group.members.map((m, i) => (
-            <span key={m} className="tag-member">
-              <MemberDot name={m} idx={i} />
-              <span style={{ fontWeight: 500 }}>{m}</span>
-            </span>
-          ))}
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            {group.members.map((m, i) => (
+              <span key={m} className="tag-member d-inline-flex align-items-center gap-2">
+                <MemberDot name={m} idx={i} />
+                <span style={{ fontWeight: 500 }}>{m}</span>
+                <button 
+                  onClick={() => handleRemoveMember(m)}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'var(--danger)', 
+                    cursor: 'pointer',
+                    padding: '0 4px',
+                    fontSize: '14px',
+                    lineHeight: 1
+                  }}
+                  title={`Remove ${m}`}
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+            <form onSubmit={handleAddMember} className="d-flex align-items-center gap-2 ms-2">
+              <select
+                value={newMemberName}
+                onChange={e => setNewMemberName(e.target.value)}
+                style={{ width: '140px', background: 'var(--bg)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: 'var(--text)', outline: 'none' }}
+              >
+                <option value="" disabled>Add friend...</option>
+                {USERS.filter(u => !group.members.includes(u)).map(u => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+              <button type="submit" className="btn-green" style={{ padding: '6px 12px', fontSize: '14px' }}>Add</button>
+            </form>
+          </div>
         </div>
 
         <div className="row g-4">
           <div className="col-md-7 d-flex flex-column gap-4">
             <div className="card-soft">
-              <h4 style={{ fontWeight: 700, marginBottom: 16 }}>Expenses</h4>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 style={{ fontWeight: 700, margin: 0 }}>Expenses</h4>
+                <button 
+                  className="btn-purple" 
+                  style={{ padding: '6px 12px', fontSize: '14px', borderRadius: '8px' }} 
+                  onClick={() => navigate("/add-expense")}
+                >
+                  + Add Expense
+                </button>
+              </div>
               {details.expenses.length === 0 && (
                 <p className="text-muted text-center py-4">No expenses yet.</p>
               )}

@@ -1,8 +1,10 @@
 import Shell from "../components/Shell";
-import { getGroups, fmt } from "../data/store";
+import { getGroups } from "../data/store";
+import { useCurrency } from "../CurrencyContext";
 
 export default function Profile() {
   const groups = getGroups();
+  const { fmt } = useCurrency();
   return (
     <Shell>
       <div className="page">
@@ -32,32 +34,35 @@ export default function Profile() {
 
         <div className="row g-4 mb-4">
           <div className="col-md-4">
-            <div className="card-soft">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <div style={{ fontSize: 32 }}>💰</div>
+            <div className="card-soft h-100 d-flex flex-column">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <div className="label-muted mb-0">Total spent</div>
                 <span className="pill pill-green">YTD Stats</span>
               </div>
-              <div className="label-muted">Total spent</div>
-              <div className="amount mb-3">{fmt(8920)}</div>
-              <div style={{ height: 6, background: "var(--bg)", borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ width: "65%", height: "100%", background: "var(--primary)" }} />
+              <div className="amount mb-auto">{fmt(8920)}</div>
+              <div className="mt-3">
+                <div style={{ height: 6, background: "var(--bg)", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ width: "65%", height: "100%", background: "var(--primary)" }} />
+                </div>
               </div>
             </div>
           </div>
           <div className="col-md-4">
-            <div className="card-soft">
-              <div style={{ fontSize: 32, marginBottom: 12 }}>🔴</div>
-              <div className="label-muted">Total owed</div>
-              <div className="amount amount-red mb-3">{fmt(4205)}</div>
-              <div className="small" style={{ color: "var(--success)", fontWeight: 600 }}>TO 4 FRIENDS</div>
+            <div className="card-soft h-100 d-flex flex-column">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <div className="label-muted mb-0">Total owed</div>
+              </div>
+              <div className="amount amount-red mb-auto">{fmt(4205)}</div>
+              <div className="small mt-3" style={{ color: "var(--success)", fontWeight: 600 }}>TO 4 FRIENDS</div>
             </div>
           </div>
           <div className="col-md-4">
-            <div className="card-soft">
-              <div style={{ fontSize: 32, marginBottom: 12 }}>💚</div>
-              <div className="label-muted">Total lent</div>
-              <div className="amount amount-green mb-3">{fmt(1500)}</div>
-              <div className="small" style={{ color: "var(--success)", fontWeight: 600 }}>DUE THIS WEEK</div>
+            <div className="card-soft h-100 d-flex flex-column">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <div className="label-muted mb-0">Total lent</div>
+              </div>
+              <div className="amount amount-green mb-auto">{fmt(1500)}</div>
+              <div className="small mt-3" style={{ color: "var(--success)", fontWeight: 600 }}>DUE THIS WEEK</div>
             </div>
           </div>
         </div>

@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import Shell from "../components/Shell";
-import { getGroups, fmt } from "../data/store";
+import { getGroups } from "../data/store";
+import { useCurrency } from "../CurrencyContext";
 
 function Donut() {
+  const { fmt } = useCurrency();
   // 4 segments: Travel 42%, Food 28%, Shopping 20%, Others 10%
   const C = 502.4; // 2*PI*80
   const segs = [
@@ -27,7 +29,7 @@ function Donut() {
         off += dash;
         return node;
       })}
-      <text x="100" y="95" textAnchor="middle" fontSize="24" fontWeight="700" fill="currentColor">₹24k</text>
+      <text x="100" y="95" textAnchor="middle" fontSize="18" fontWeight="700" fill="currentColor">{fmt(24000)}</text>
       <text x="100" y="115" textAnchor="middle" fontSize="11" fill="#64748b">TOTAL</text>
     </svg>
   );
@@ -35,6 +37,7 @@ function Donut() {
 
 export default function Dashboard() {
   const groups = getGroups();
+  const { fmt } = useCurrency();
   const owe = 1200, owed = 800;
 
   return (

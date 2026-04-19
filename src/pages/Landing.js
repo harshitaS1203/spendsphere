@@ -10,14 +10,14 @@ export default function Landing() {
         <p className="text-muted mb-4">
           All your shared expenses in one place. Curated financial clarity for the digital era.
         </p>
-        <div className="d-flex gap-3 justify-content-center mb-4">
-          <Link to="/create-group"><button className="btn-purple px-4 py-3">Create Group</button></Link>
-          <Link to="/dashboard"><button className="btn-outline-purple px-4 py-3">Join Group</button></Link>
-        </div>
-        <div className="mt-4 pt-4 border-top">
-          <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-            Sign in to your account →
+        <div className="mt-4">
+          <Link to="/login">
+            <button className="btn-purple w-100 py-3 mb-3" style={{ fontSize: '16px' }}>Sign In</button>
           </Link>
+          <p className="text-center text-muted mt-3 mb-0">
+            Don't have an account?{" "}
+            <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600 }}>Register now</Link>
+          </p>
         </div>
       </div>
     </div>

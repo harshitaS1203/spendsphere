@@ -42,7 +42,7 @@ export default function Login() {
 
         <p className="text-center text-muted mt-4 mb-0">
           New to SpendSphere?{" "}
-          <Link to="/dashboard" style={{ color: "var(--primary)", fontWeight: 600 }}>Create an account</Link>
+          <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600 }}>Create an account</Link>
         </p>
       </div>
     </div>

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "/Users/harshitasadhwani/Downloads/spendsphere/src/assets/s logo.jpeg";
 import { useNavigate } from "react-router-dom";
+import { useCurrency } from "../CurrencyContext";
 
 export default function Shell({ children }) {
   const { pathname } = useLocation();
+  const { currency, setCurrency } = useCurrency();
   const isActive = (p) => pathname === p || pathname.startsWith(p + "/");
   const navigate = useNavigate();
   const [showReminders, setShowReminders] = useState(false);
@@ -19,14 +21,14 @@ export default function Shell({ children }) {
             <div className="brand-sub">Split Smarter</div>
           </div>
         </div>
-        <NavLink to="/dashboard" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>📊 <span>Dashboard</span></NavLink>
-        <NavLink to="/groups" className={() => "nav-link-side" + (isActive("/groups") || isActive("/create-group") ? " active" : "")}>👥 <span>Groups</span></NavLink>
-        <NavLink to="/activity" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>⏱️ <span>Activity</span></NavLink>
-        <NavLink to="/profile" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>👤 <span>Profile</span></NavLink>
-        <NavLink to="/settings" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>⚙️ <span>Settings</span></NavLink>
+        <NavLink to="/dashboard" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Dashboard</span></NavLink>
+        <NavLink to="/groups" className={() => "nav-link-side" + (isActive("/groups") || isActive("/create-group") ? " active" : "")}><span>Groups</span></NavLink>
+        <NavLink to="/activity" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Activity</span></NavLink>
+        <NavLink to="/profile" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Profile</span></NavLink>
+        <NavLink to="/settings" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Settings</span></NavLink>
         <div className="sidebar-footer">
           <Link to="/create-group"><button className="btn-new-group">+ New Group</button></Link>
-          <Link to="/" className="nav-link-side">🚪 <span>Logout</span></Link>
+          <Link to="/" className="nav-link-side"><span>Logout</span></Link>
         </div>
       </aside>
 
@@ -41,7 +43,20 @@ export default function Shell({ children }) {
             </nav>
           </div>
           <div className="top-actions">
-            <div className="currency-toggle"><span className="active">INR</span> / <span>USD</span></div>
+            <div className="currency-toggle">
+              {["INR", "USD", "EUR"].map((c, i) => (
+                <span key={c}>
+                  <span 
+                    className={currency === c ? "active" : ""} 
+                    onClick={() => setCurrency(c)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {c}
+                  </span>
+                  {i < 2 && " / "}
+                </span>
+              ))}
+            </div>
             <button className="btn-add-expense" onClick={() => navigate("/add-expense")}>Add Expense</button>
             <div className="position-relative">
               <div className="bell" onClick={() => setShowReminders(!showReminders)}>🔔</div>

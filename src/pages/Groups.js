@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import Shell, { MemberDots } from "../components/Shell";
-import { getGroups, fmt } from "../data/store";
+import { getGroups } from "../data/store";
+import { useCurrency } from "../CurrencyContext";
 
 export default function Groups() {
   const groups = getGroups();
+  const { fmt } = useCurrency();
   return (
     <Shell>
       <div className="page">

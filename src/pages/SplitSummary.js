@@ -1,9 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import Shell, { MemberDot } from "../components/Shell";
-import { getGroups, GROUP_DETAILS, fmt } from "../data/store";
+import { getGroups, GROUP_DETAILS } from "../data/store";
+import { useCurrency } from "../CurrencyContext";
 
 export default function SplitSummary() {
   const { id } = useParams();
+  const { fmt } = useCurrency();
   const groups = getGroups();
   const group = groups.find((g) => g.id === id) || groups[0];
   const details = GROUP_DETAILS[id] || { settlements: [] };

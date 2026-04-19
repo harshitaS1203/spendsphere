@@ -53,9 +53,6 @@ export function getGroups() {
 export function saveGroups(g) {
   localStorage.setItem("spendsphere_groups", JSON.stringify(g));
 }
-export function fmt(n) {
-  return "₹" + Math.abs(n).toLocaleString("en-IN");
-}
 export function memberColor(idx) {
   const colors = ["#7c3aed", "#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#ec4899", "#14b8a6", "#f97316"];
   return colors[idx % colors.length];
