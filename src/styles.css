@@ -914,6 +914,7 @@ input:checked+.toggle-slider::before {
 .chat-input {
   flex: 1;
   background: var(--bg);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 12px 20px;
