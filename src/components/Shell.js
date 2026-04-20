@@ -21,11 +21,26 @@ export default function Shell({ children }) {
             <div className="brand-sub">Split Smarter</div>
           </div>
         </div>
-        <NavLink to="/dashboard" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Dashboard</span></NavLink>
-        <NavLink to="/groups" className={() => "nav-link-side" + (isActive("/groups") || isActive("/create-group") ? " active" : "")}><span>Groups</span></NavLink>
-        <NavLink to="/activity" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Activity</span></NavLink>
-        <NavLink to="/profile" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Profile</span></NavLink>
-        <NavLink to="/settings" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}><span>Settings</span></NavLink>
+        <NavLink to="/dashboard" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>
+          <span className="nav-icon">📊</span>
+          <span className="nav-text">Dashboard</span>
+        </NavLink>
+        <NavLink to="/groups" className={() => "nav-link-side" + (isActive("/groups") || isActive("/create-group") ? " active" : "")}>
+          <span className="nav-icon">👥</span>
+          <span className="nav-text">Groups</span>
+        </NavLink>
+        <NavLink to="/activity" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>
+          <span className="nav-icon">⏱️</span>
+          <span className="nav-text">Activity</span>
+        </NavLink>
+        <NavLink to="/profile" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>
+          <span className="nav-icon">👤</span>
+          <span className="nav-text">Profile</span>
+        </NavLink>
+        <NavLink to="/settings" className={({ isActive }) => "nav-link-side" + (isActive ? " active" : "")}>
+          <span className="nav-icon">⚙️</span>
+          <span className="nav-text">Settings</span>
+        </NavLink>
         <div className="sidebar-footer">
           <Link to="/create-group"><button className="btn-new-group">+ New Group</button></Link>
           <Link to="/" className="nav-link-side"><span>Logout</span></Link>

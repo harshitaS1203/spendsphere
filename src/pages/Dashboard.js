@@ -54,7 +54,7 @@ export default function Dashboard() {
               <span className="pill pill-red mb-3 d-inline-block">3 Pending Bills</span>
               <div className="d-flex gap-2 mt-3">
                 <button className="btn-green">Settle Now</button>
-                <button className="btn-outline-purple">View All</button>
+                <button className="btn-outline-purple" onClick={() => document.querySelector('.bell')?.click()}>View All</button>
               </div>
             </div>
           </div>
@@ -81,9 +81,9 @@ export default function Dashboard() {
                 <h3 style={{ fontWeight: 700, margin: 0 }}>Expense Analytics</h3>
                 <span className="pill pill-purple">This Month</span>
               </div>
-              <div className="row align-items-center">
-                <div className="col-5 text-center"><Donut /></div>
-                <div className="col-7">
+              <div className="d-flex flex-column flex-md-row justify-content-center align-items-center gap-4 gap-md-5 mt-4">
+                <div className="text-center"><Donut /></div>
+                <div style={{ width: "200px" }}>
                   <div className="donut-legend">
                     <div className="legend-item"><span className="legend-dot" style={{ background: "#7c3aed" }} /> Travel <span className="ms-auto fw-bold">42%</span></div>
                     <div className="legend-item"><span className="legend-dot" style={{ background: "#f59e0b" }} /> Food <span className="ms-auto fw-bold">28%</span></div>
