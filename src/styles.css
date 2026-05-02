@@ -230,16 +230,7 @@ a {
   cursor: pointer;
 }
 
-.bell::after {
-  content: "";
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background: var(--danger);
-  border-radius: 50%;
-}
+
 
 .avatar {
   width: 40px;

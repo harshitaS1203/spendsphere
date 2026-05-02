@@ -1,37 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Shell from "../components/Shell";
-import { getGroups, saveGroups, USERS } from "../data/store";
+import { createGroup, getAllUsers } from "../api";
 
 const ICONS = ["👥", "🏖️", "✈️", "🍽️", "🏠", "🎉", "🛒", "💼", "🎓", "📚"];
 
 export default function CreateGroup() {
   const nav = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("👥");
-  const [members, setMembers] = useState(["Harshita"]);
+  
+  // Store full user objects in members, starting with currentUser
+  const [members, setMembers] = useState(currentUser ? [currentUser] : []);
+  
   const [input, setInput] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser) {
+      nav("/login");
+      return;
+    }
+    async function fetchUsers() {
+      try {
+        const users = await getAllUsers();
+        setAllUsers(users);
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+    }
+    fetchUsers();
+  }, [currentUser, nav]);
 
   function addMember() {
-    const v = input.trim();
-    if (v && !members.includes(v)) setMembers([...members, v]);
+    const v = input.trim().toLowerCase();
+    if (!v) return;
+    
+    // Find user by name or email
+    const user = allUsers.find(u => u.name.toLowerCase() === v || u.email.toLowerCase() === v);
+    if (!user) {
+      alert("User not found!");
+      return;
+    }
+
+    if (!members.find(m => m._id === user._id)) {
+      setMembers([...members, user]);
+    }
     setInput("");
   }
+
   function removeMember(i) {
+    if (i === 0) return; // don't remove creator
     setMembers(members.filter((_, idx) => idx !== i));
   }
-  function create() {
+
+  async function create() {
     if (!name.trim()) { alert("Please enter a group name"); return; }
-    const groups = getGroups();
-    groups.push({
-      id: name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
-      name: name.trim(),
-      icon, members,
-      status: "All Settled", amount: 0,
-    });
-    saveGroups(groups);
-    nav("/groups");
+    setLoading(true);
+    try {
+      // Create array of just the IDs for the backend
+      const memberIds = members.map(m => m._id);
+      await createGroup(name.trim(), memberIds, icon);
+      nav("/groups");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create group");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  if (!currentUser) return null;
 
   return (
     <Shell>
@@ -59,19 +100,19 @@ export default function CreateGroup() {
 
           <label className="label-muted mb-2 d-block">Add Members</label>
           <div className="d-flex gap-2 mb-3">
-            <input className="form-control" placeholder="Enter member name" list="userList"
+            <input className="form-control" placeholder="Enter member name or email" list="userList"
                    value={input} onChange={(e) => setInput(e.target.value)}
                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addMember())} />
             <datalist id="userList">
-              {USERS.map((u) => <option key={u} value={u} />)}
+              {allUsers.filter(u => u._id !== currentUser._id).map((u) => <option key={u._id} value={u.email}>{u.name}</option>)}
             </datalist>
             <button className="btn-purple" onClick={addMember}>Add</button>
           </div>
 
           <div className="mb-2">
             {members.map((m, i) => (
-              <span key={m} className="tag-member">
-                {m}{i === 0 ? " (You)" : (
+              <span key={m._id} className="tag-member">
+                {m.name}{i === 0 ? " (You)" : (
                   <span className="x" onClick={() => removeMember(i)}>×</span>
                 )}
               </span>
@@ -79,9 +120,11 @@ export default function CreateGroup() {
           </div>
           <div className="text-muted small mb-4">{members.length} member{members.length !== 1 ? "s" : ""} added</div>
 
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 justify-content-start">
             <Link to="/dashboard"><button className="btn-outline-purple px-4">Cancel</button></Link>
-            <button className="btn-purple flex-grow-1 py-3" onClick={create}>Create Group</button>
+            <button className="btn-purple px-4" onClick={create} disabled={loading}>
+              {loading ? "Creating..." : "Create Group"}
+            </button>
           </div>
         </div>
       </div>

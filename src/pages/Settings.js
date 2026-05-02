@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Shell from "../components/Shell";
 import { useCurrency } from "../CurrencyContext";
 
@@ -17,6 +18,17 @@ export default function Settings() {
     setCurrency(c);
   }
 
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const nav = useNavigate();
+
+  useEffect(() => {
+    if (!currentUser) {
+      nav("/login");
+    }
+  }, [currentUser, nav]);
+
+  if (!currentUser) return null;
+
   return (
     <Shell>
       <div className="page">
@@ -31,21 +43,17 @@ export default function Settings() {
                   width: 80, height: 80, borderRadius: "50%", background: "var(--primary)",
                   color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 32, fontWeight: 700,
-                }}>H</div>
+                }}>{currentUser.name[0].toUpperCase()}</div>
                 <div>
-                  <h2 style={{ fontWeight: 700, marginBottom: 4 }}>Harshita Sadhwani</h2>
-                  <div className="text-muted">harshita12@gmail.com</div>
+                  <h2 style={{ fontWeight: 700, marginBottom: 4 }}>{currentUser.name}</h2>
+                  <div className="text-muted">{currentUser.email}</div>
 
                 </div>
               </div>
               <div className="row g-3">
-                <div className="col-6">
-                  <label className="label-muted mb-2 d-block">First Name</label>
-                  <input className="form-control" defaultValue="Harshita" />
-                </div>
-                <div className="col-6">
-                  <label className="label-muted mb-2 d-block">Last Name</label>
-                  <input className="form-control" defaultValue="Sadhwani" />
+                <div className="col-12">
+                  <label className="label-muted mb-2 d-block">Username</label>
+                  <input className="form-control" defaultValue={currentUser.name} />
                 </div>
               </div>
             </div>

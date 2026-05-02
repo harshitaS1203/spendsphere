@@ -1,20 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Shell, { MemberDot } from "../components/Shell";
 import { useCurrency } from "../CurrencyContext";
-
-const DUMMY_ACTIVITIES = [
-  { id: 1, group: "TODAY", type: "Paid", textTpl: (f) => `Harshita paid ${f(500)} to Dhruvi`, time: "2:45 PM", amountPrefix: "− ", amountVal: 500, name: "Harshita", icon: "💸", amountColor: "var(--danger)", badgeColor: "var(--danger)" },
-  { id: 2, group: "TODAY", type: "Group Expenses", textTpl: (f) => `${f(1000)} added in College Trip by Dhruvi`, time: "11:20 AM", amountPrefix: "", amountVal: 1000, name: "Dhruvi", icon: "👥", amountColor: "var(--text)", badgeColor: "var(--primary)", tag: "👥 College Trip" },
-  { id: 3, group: "YESTERDAY", type: "Received", textTpl: (f) => `You received ${f(300)} from Heer`, time: "7:10 PM", amountPrefix: "+ ", amountVal: 300, name: "Heer", icon: "💰", amountColor: "var(--success)", badgeColor: "var(--success)" },
-  { id: 4, group: "YESTERDAY", type: "Paid", textTpl: (f) => `Tvisha settled ${f(200)} with Dhruvi`, time: "4:32 PM", amountPrefix: "", amountVal: 200, name: "Tvisha", icon: "🔄", amountColor: "var(--text)", badgeColor: "var(--muted)" }
-];
+import { getUserTransactions } from "../api";
+import { useNavigate } from "react-router-dom";
 
 export default function Activity() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const { fmt } = useCurrency();
+  const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  const filteredActivities = DUMMY_ACTIVITIES.filter(act => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [youPaid, setYouPaid] = useState(0);
+  const [youReceived, setYouReceived] = useState(0);
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    async function fetchData() {
+      try {
+        const fetchedTransactions = await getUserTransactions(currentUser._id);
+        
+        let paid = 0;
+        let received = 0;
+        const mappedActs = [];
+
+        fetchedTransactions.forEach((t, i) => {
+          const isPending = !t.isSettled;
+          if (t.fromUser._id === currentUser._id) {
+            if (isPending) paid += t.amount;
+            mappedActs.push({
+              id: t._id || i,
+              group: isPending ? "PENDING" : "SETTLED",
+              type: "Paid",
+              textTpl: (f) => isPending ? `You owe ${t.toUser.name} ${f(t.amount)}` : `You paid ${t.toUser.name} ${f(t.amount)}`,
+              time: new Date(t.createdAt).toLocaleDateString(),
+              amountPrefix: "− ",
+              amountVal: t.amount,
+              name: t.toUser.name,
+              amountColor: isPending ? "var(--danger)" : "var(--muted)",
+              tag: t.groupId?.name ? `${t.groupId.icon || "📁"} ${t.groupId.name}` : "",
+              isSettled: !isPending
+            });
+          } else if (t.toUser._id === currentUser._id) {
+            if (isPending) received += t.amount;
+            mappedActs.push({
+              id: t._id || i,
+              group: isPending ? "PENDING" : "SETTLED",
+              type: "Received",
+              textTpl: (f) => isPending ? `${t.fromUser.name} owes you ${f(t.amount)}` : `${t.fromUser.name} paid you ${f(t.amount)}`,
+              time: new Date(t.createdAt).toLocaleDateString(),
+              amountPrefix: "+ ",
+              amountVal: t.amount,
+              name: t.fromUser.name,
+              amountColor: isPending ? "var(--success)" : "var(--muted)",
+              tag: t.groupId?.name ? `${t.groupId.icon || "📁"} ${t.groupId.name}` : "",
+              isSettled: !isPending
+            });
+          }
+        });
+
+        setYouPaid(paid);
+        setYouReceived(received);
+        setActivities(mappedActs);
+      } catch (err) {
+        console.error("Failed to fetch activity data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [currentUser, navigate]);
+
+  const filteredActivities = activities.filter(act => {
     if (filter !== "All" && act.type !== filter) return false;
     const text = act.textTpl(fmt);
     if (search && !text.toLowerCase().includes(search.toLowerCase())) return false;
@@ -27,6 +91,8 @@ export default function Activity() {
     return acc;
   }, {});
 
+  if (!currentUser) return null;
+
   return (
     <Shell>
       <div className="page w-100">
@@ -38,12 +104,12 @@ export default function Activity() {
           </div>
           <div className="d-flex gap-3 flex-wrap">
             <div className="stat-box flex-grow-1">
-              <div className="text-muted" style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>YOU PAID</div>
-              <div style={{ color: "var(--danger)", fontWeight: 700, fontSize: 20 }}>{fmt(950)}</div>
+              <div className="text-muted" style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>YOU OWE</div>
+              <div style={{ color: "var(--danger)", fontWeight: 700, fontSize: 20 }}>{fmt(youPaid)}</div>
             </div>
             <div className="stat-box flex-grow-1">
-              <div className="text-muted" style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>YOU RECEIVED</div>
-              <div style={{ color: "var(--success)", fontWeight: 700, fontSize: 20 }}>{fmt(1050)}</div>
+              <div className="text-muted" style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>YOU ARE OWED</div>
+              <div style={{ color: "var(--success)", fontWeight: 700, fontSize: 20 }}>{fmt(youReceived)}</div>
             </div>
           </div>
         </div>
@@ -62,7 +128,7 @@ export default function Activity() {
               />
             </div>
             <div className="d-flex gap-2 flex-wrap">
-              {["All", "Paid", "Received", "Group Expenses"].map(f => (
+              {["All", "Paid", "Received"].map(f => (
                 <span 
                   key={f} 
                   className={`filter-pill ${filter === f ? "active" : ""}`}
@@ -75,7 +141,9 @@ export default function Activity() {
           </div>
         </div>
 
-        {Object.entries(groupedActivities).length === 0 ? (
+        {loading ? (
+          <div className="text-center py-5 text-muted">Loading activities...</div>
+        ) : Object.entries(groupedActivities).length === 0 ? (
           <div className="text-center py-5 text-muted">No activities found.</div>
         ) : (
           Object.entries(groupedActivities).map(([group, acts]) => (
@@ -87,14 +155,16 @@ export default function Activity() {
                     <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between w-100 gap-3">
                       <div className="d-flex align-items-center gap-3">
                         <div className="position-relative">
-                          <MemberDot name={act.name} idx={act.id} />
+                          <MemberDot name={act.name} idx={idx} />
                         </div>
                         <div>
                           <div style={{ fontWeight: 600 }}>{act.textTpl(fmt)}</div>
                           <div className="d-flex align-items-center gap-2 mt-1 flex-wrap">
                             {act.tag && <span className="tag-member" style={{ padding: "2px 8px", fontSize: 11, margin: 0 }}>{act.tag}</span>}
                             <span className="text-muted small">{act.time}</span>
-                            <span className="pill pill-green" style={{ fontSize: 10 }}>COMPLETED</span>
+                            <span className="pill" style={{ fontSize: 10, background: "var(--bg)", color: act.isSettled ? "var(--success)" : "inherit" }}>
+                              {act.isSettled ? "SETTLED" : "PENDING"}
+                            </span>
                           </div>
                         </div>
                       </div>
