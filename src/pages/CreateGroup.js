@@ -32,7 +32,8 @@ export default function CreateGroup() {
       }
     }
     fetchUsers();
-  }, [currentUser, nav]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, nav]);
 
   function addMember() {
     const v = input.trim().toLowerCase();

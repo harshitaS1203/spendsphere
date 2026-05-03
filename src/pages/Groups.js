@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Shell, { MemberDots } from "../components/Shell";
-import { useCurrency } from "../CurrencyContext";
+
 import { getUserGroups } from "../api";
 
 export default function Groups() {
   const [groups, setGroups] = useState([]);
-  const { fmt } = useCurrency();
+
   const nav = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
@@ -26,7 +26,8 @@ export default function Groups() {
     }
 
     fetchGroups();
-  }, [currentUser, nav]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, nav]);
 
   if (!currentUser) return null;
 

@@ -76,7 +76,8 @@ export default function Activity() {
     }
 
     fetchData();
-  }, [currentUser, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, navigate]);
 
   const filteredActivities = activities.filter(act => {
     if (filter !== "All" && act.type !== filter) return false;

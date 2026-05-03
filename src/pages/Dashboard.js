@@ -7,9 +7,9 @@ import { getUserGroups, getUserTransactions, getUserExpenses } from "../api";
 function Donut({ categoryTotals }) {
   const { fmt } = useCurrency();
   const C = 502.4; // 2*PI*80
-  
+
   const total = Object.values(categoryTotals || {}).reduce((a, b) => a + b, 0);
-  
+
   const colors = {
     Travel: "#7c3aed",
     Food: "#f59e0b",
@@ -66,6 +66,9 @@ export default function Dashboard() {
   const [groups, setGroups] = useState([]);
   const [owe, setOwe] = useState(0);
   const [owed, setOwed] = useState(0);
+  const [owedByDetails, setOwedByDetails] = useState([]);
+  const [showSettleModal, setShowSettleModal] = useState(false);
+  const [groupsIOwe, setGroupsIOwe] = useState([]);
   const [categoryTotals, setCategoryTotals] = useState({});
   const { fmt } = useCurrency();
   const nav = useNavigate();
@@ -91,20 +94,34 @@ export default function Dashboard() {
         const fetchedTransactions = await getUserTransactions(currentUser._id);
         let tempOwe = 0;
         let tempOwed = 0;
+        let owedMap = {};
+        let groupsIOweMap = {};
 
         if (fetchedTransactions && fetchedTransactions.length > 0) {
           fetchedTransactions.forEach(t => {
             if (!t.isSettled) {
               if (t.fromUser && t.fromUser._id === currentUser._id) {
                 tempOwe += t.amount;
+                if (t.groupId) {
+                  groupsIOweMap[t.groupId._id] = t.groupId;
+                }
               } else if (t.toUser && t.toUser._id === currentUser._id) {
                 tempOwed += t.amount;
+                if (t.fromUser) {
+                  if (!owedMap[t.fromUser._id]) {
+                    owedMap[t.fromUser._id] = { name: t.fromUser.name, amount: 0 };
+                  }
+                  owedMap[t.fromUser._id].amount += t.amount;
+                }
               }
             }
           });
         }
         setOwe(tempOwe);
         setOwed(tempOwed);
+        const sortedDebtors = Object.values(owedMap).sort((a, b) => b.amount - a.amount);
+        setOwedByDetails(sortedDebtors.slice(0, 1));
+        setGroupsIOwe(Object.values(groupsIOweMap));
       } catch (err) {
         console.error("Failed to fetch transactions", err);
       }
@@ -131,7 +148,8 @@ export default function Dashboard() {
     }
 
     fetchData();
-  }, [currentUser, nav]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, nav]);
 
   if (!currentUser) return null;
 
@@ -144,10 +162,10 @@ export default function Dashboard() {
         <div className="row g-4 mb-4">
           <div className="col-md-6">
             <div className="card-soft h-100">
-              <div className="label-muted mb-2">↗️ Total you owe</div>
+              <div className="label-muted mb-2">Total you owe</div>
               <div className="amount amount-red mb-3">{fmt(owe)}</div>
               <div className="d-flex gap-2 mt-auto">
-                <button className="btn-green">Settle Now</button>
+                <button className="btn-green" onClick={() => setShowSettleModal(true)}>Settle Now</button>
               </div>
             </div>
           </div>
@@ -155,6 +173,19 @@ export default function Dashboard() {
             <div className="card-purple h-100 d-flex flex-column">
               <div className="muted mb-2">Total you are owed</div>
               <div className="amount-lg mb-4">{fmt(owed)}</div>
+              {owedByDetails.length > 0 && (
+                <div className="mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: "12px" }}>
+                  <div className="muted mb-2" style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Who owes you</div>
+                  <div className="d-flex flex-column gap-2" style={{ maxHeight: "120px", overflowY: "auto" }}>
+                    {owedByDetails.map((person, idx) => (
+                      <div key={idx} className="d-flex justify-content-between align-items-center">
+                        <span style={{ fontWeight: 500, fontSize: "14px" }}>{person.name}</span>
+                        <span style={{ fontWeight: 600, fontSize: "14px" }}>{fmt(person.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -194,6 +225,52 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {showSettleModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.6)", zIndex: 9999,
+          display: "flex", alignItems: "center", justifyContent: "center", padding: "20px"
+        }} onClick={() => setShowSettleModal(false)}>
+          <div className="card-soft" style={{
+            width: "100%", maxWidth: "400px", background: "var(--bg)", 
+            position: "relative", padding: "24px", borderRadius: "16px"
+          }} onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowSettleModal(false)}
+              style={{ position: "absolute", top: "16px", right: "16px", background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "var(--muted)", lineHeight: 1 }}
+            >×</button>
+            <h3 style={{ fontWeight: 700, marginBottom: "8px", marginTop: 0 }}>Settle Up</h3>
+            <p className="text-muted mb-4">Select a group to settle your debts.</p>
+            
+            {groupsIOwe.length === 0 ? (
+              <div className="text-center py-4 text-muted">
+                <div style={{ fontSize: "32px", marginBottom: "8px" }}>🎉</div>
+                You don't owe anything!
+              </div>
+            ) : (
+              <div className="d-flex flex-column gap-2" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {groupsIOwe.map(g => {
+                  const fullGroup = groups.find(grp => grp._id === g._id) || g;
+                  return (
+                  <Link 
+                    key={g._id} 
+                    to={`/groups/${g._id}/summary`} 
+                    className="group-card card-soft" 
+                    style={{ textDecoration: "none", padding: "12px", transition: "transform 0.2s", margin: 0 }}
+                    onClick={() => setShowSettleModal(false)}
+                  >
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="group-icon" style={{ marginBottom: 0, fontSize: "24px", width: "40px", height: "40px" }}>{fullGroup.icon || "📁"}</div>
+                      <div style={{ fontWeight: 600, fontSize: "16px", color: "var(--text)" }}>{fullGroup.name}</div>
+                    </div>
+                  </Link>
+                )})}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </Shell>
   );
 }

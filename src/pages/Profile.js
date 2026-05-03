@@ -13,7 +13,7 @@ export default function Profile() {
   const [owed, setOwed] = useState(0); // what they owe me (lent)
   const [owe, setOwe] = useState(0);   // what I owe (owed)
   const [totalSpent, setTotalSpent] = useState(0);
-  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     if (!currentUser) {
@@ -59,13 +59,12 @@ export default function Profile() {
 
       } catch (err) {
         console.error("Failed to fetch profile data", err);
-      } finally {
-        setLoading(false);
       }
     }
 
     fetchData();
-  }, [currentUser, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, navigate]);
 
   if (!currentUser) return null;
 
@@ -83,7 +82,7 @@ export default function Profile() {
                 }}>{currentUser.name[0].toUpperCase()}</div>
                 <div className="flex-grow-1">
                   <h1 style={{ fontSize: 36, fontWeight: 700, marginBottom: 4 }}>{currentUser.name}</h1>
-                  <span className="pill pill-green mb-3 d-inline-block">PRO MEMBER</span>
+
 
                   <div className="d-flex gap-2 mt-3 flex-wrap">
                     <span className="px-3 py-2" style={{ background: "var(--bg)", borderRadius: 10, fontSize: 14 }}>📧 {currentUser.email}</span>
@@ -100,14 +99,12 @@ export default function Profile() {
             <div className="card-soft h-100 d-flex flex-column">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <div className="label-muted mb-0">Total spent</div>
-                <span className="pill pill-green">YTD Stats</span>
+
               </div>
               <div className="amount mb-auto">{fmt(totalSpent)}</div>
               <div className="mt-3">
-                <div style={{ height: 6, background: "var(--bg)", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ width: `${Math.min(100, (totalSpent / 10000) * 100)}%`, height: "100%", background: "var(--primary)", transition: "width 0.5s ease" }} />
-                </div>
-                <div className="text-muted small mt-2">Based on ₹10,000 budget</div>
+                
+
               </div>
             </div>
           </div>
@@ -117,7 +114,7 @@ export default function Profile() {
                 <div className="label-muted mb-0">Total owed</div>
               </div>
               <div className="amount amount-red mb-auto">{fmt(owe)}</div>
-              <div className="small mt-3" style={{ color: "var(--success)", fontWeight: 600 }}>OUTSTANDING</div>
+              
             </div>
           </div>
           <div className="col-md-4">
@@ -126,7 +123,7 @@ export default function Profile() {
                 <div className="label-muted mb-0">Total lent</div>
               </div>
               <div className="amount amount-green mb-auto">{fmt(owed)}</div>
-              <div className="small mt-3" style={{ color: "var(--success)", fontWeight: 600 }}>OUTSTANDING</div>
+              
             </div>
           </div>
         </div>

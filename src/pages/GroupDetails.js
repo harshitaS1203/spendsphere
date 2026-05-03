@@ -14,7 +14,6 @@ export default function GroupDetails() {
   const [expenses, setExpenses] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newMemberName, setNewMemberName] = useState("");
 
   useEffect(() => {
     if (!currentUser) {
@@ -86,14 +85,7 @@ export default function GroupDetails() {
     alert("Delete not fully implemented in API yet, skipping for safety.");
   };
 
-  const handleRemoveMember = (member) => {
-    alert("Remove member not fully implemented in API yet.");
-  };
 
-  const handleAddMember = (e) => {
-    e.preventDefault();
-    alert("Add member not fully implemented in API yet.");
-  };
 
   if (!currentUser || loading) return <Shell><div className="page">Loading...</div></Shell>;
   if (!group) return <Shell><div className="page">Group not found.</div></Shell>;
@@ -147,18 +139,23 @@ export default function GroupDetails() {
                 <p className="text-muted text-center py-4">No expenses yet.</p>
               )}
               {expenses.map((e) => {
-                const catIcons = { Food: "🍔", Travel: "✈️", Shopping: "🛍️", Others: "💸" };
-                const icon = catIcons[e.category] || "💸";
                 const isCustom = e.splitType === 'custom';
                 return (
                   <div className="expense-row" key={e._id}>
                     <div className="d-flex align-items-center">
-                      <div className="cat-icon">{icon}</div>
                       <div>
                         <div style={{ fontWeight: 600 }}>{e.description}</div>
                         <div className="text-muted small">
                           {e.paidBy.name} paid 
-                          {isCustom && <span className="ms-1" style={{color: "var(--primary)"}}>(Custom split)</span>}
+                          {isCustom && (() => {
+                            const otherMembers = e.splitBetween
+                                .filter(u => String(u._id) !== String(e.paidBy._id))
+                                .map(u => u.name);
+                            const splitText = otherMembers.length > 0 
+                                ? `(Custom split with ${otherMembers.join(", ")})` 
+                                : `(Custom split)`;
+                            return <span className="ms-1" style={{color: "var(--primary)"}}>{splitText}</span>;
+                          })()}
                         </div>
                       </div>
                     </div>

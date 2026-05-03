@@ -692,10 +692,6 @@ input:checked+.toggle-slider::before {
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-
   .page {
     padding: 16px;
   }

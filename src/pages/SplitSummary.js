@@ -114,7 +114,6 @@ export default function SplitSummary() {
   if (!currentUser || loading) return <Shell><div className="page">Loading...</div></Shell>;
   if (!group) return <Shell><div className="page">Group not found.</div></Shell>;
 
-  const catIcons = { Food: "🍔", Travel: "✈️", Shopping: "🛍️", Others: "💸" };
 
   return (
     <Shell>
@@ -165,7 +164,7 @@ export default function SplitSummary() {
               <h4 style={{ fontWeight: 700, marginBottom: 16 }}>Spending Categories</h4>
               {Object.entries(categories).filter(([_, val]) => val > 0).map(([cat, val]) => (
                  <div className="d-flex justify-content-between mb-3" key={cat}>
-                   <span>{catIcons[cat]} {cat}</span><strong>{val}%</strong>
+                   <span>{cat}</span><strong>{val}%</strong>
                  </div>
               ))}
               {Object.entries(categories).filter(([_, val]) => val > 0).length === 0 && (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Shell, { MemberDot } from "../components/Shell";
+import Shell from "../components/Shell";
 import { getUserGroups, addExpense } from "../api";
 
 const AddExpense = () => {
@@ -37,26 +37,36 @@ const AddExpense = () => {
             }
         }
         fetchGroups();
-    }, [currentUser, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUser?._id, navigate]);
 
-    const activeGroup = groups.find((g) => g._id === selectedGroupId) || groups[0];
+    const activeGroup = groups.find((g) => String(g._id) === String(selectedGroupId)) || groups[0];
     const members = activeGroup ? activeGroup.members : [];
 
-    // Reset custom split members when group changes
+    // Reset custom split members and paidBy when group changes
     useEffect(() => {
         if (members.length > 0) {
-            setCustomSplitMembers(members.map(m => m._id));
+            setCustomSplitMembers(members.map(m => String(m._id)));
+            
+            // Ensure paidBy is a valid member of the newly selected group
+            const isValidPayer = members.some(m => String(m._id) === String(paidBy));
+            if (!isValidPayer) {
+                const me = members.find(m => String(m._id) === String(currentUser?._id));
+                setPaidBy(me ? String(me._id) : String(members[0]._id));
+            }
         }
-    }, [selectedGroupId, members.length]); // Wait for members to load
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedGroupId, members]);
 
     const handleToggleCustomMember = (memberId) => {
-        if (customSplitMembers.includes(memberId)) {
+        const mId = String(memberId);
+        if (customSplitMembers.includes(mId)) {
             // Ensure at least one member remains selected
             if (customSplitMembers.length > 1) {
-                setCustomSplitMembers(customSplitMembers.filter(id => id !== memberId));
+                setCustomSplitMembers(customSplitMembers.filter(id => id !== mId));
             }
         } else {
-            setCustomSplitMembers([...customSplitMembers, memberId]);
+            setCustomSplitMembers([...customSplitMembers, mId]);
         }
     };
 
