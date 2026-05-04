@@ -15,11 +15,11 @@ exports.getReminders = async (req, res) => {
     const reminders = transactions.map(t => {
       // If user is fromUser (they owe money)
       if (t.fromUser._id.toString() === userId) {
-        return `You owe ₹${t.amount.toFixed(2)} to ${t.toUser.name}`;
+        return { type: 'owe', amount: t.amount, name: t.toUser.name };
       } 
       // If user is toUser (they are owed money)
       else {
-        return `${t.fromUser.name} owes you ₹${t.amount.toFixed(2)}`;
+        return { type: 'owed', amount: t.amount, name: t.fromUser.name };
       }
     });
 

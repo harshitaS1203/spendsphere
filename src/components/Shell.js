@@ -7,7 +7,7 @@ import { getReminders } from "../api";
 
 export default function Shell({ children }) {
   const { pathname } = useLocation();
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency, fmt } = useCurrency();
   const isActive = (p) => pathname === p || pathname.startsWith(p + "/");
   const navigate = useNavigate();
   const [showReminders, setShowReminders] = useState(false);
@@ -99,17 +99,38 @@ export default function Shell({ children }) {
                     {reminders.length === 0 ? (
                       <div className="text-muted text-center py-3">No pending reminders!</div>
                     ) : (
-                      reminders.map((rem, i) => (
-                        <div key={i} className={`reminder-card ${rem.includes("owe") ? "reminder-red" : "reminder-green"}`}>
+                      reminders.map((rem, i) => {
+                        let type = "owed", name = "Unknown", amount = 0;
+                        if (typeof rem === "string") {
+                          if (rem.startsWith("You owe")) {
+                            type = "owe";
+                            const match = rem.match(/You owe ₹([\d.]+) to (.+)/);
+                            if (match) { amount = parseFloat(match[1]); name = match[2]; }
+                          } else {
+                            type = "owed";
+                            const match = rem.match(/(.+) owes you ₹([\d.]+)/);
+                            if (match) { name = match[1]; amount = parseFloat(match[2]); }
+                          }
+                        } else {
+                          type = rem?.type || "owed";
+                          name = rem?.name || "Unknown";
+                          amount = rem?.amount || 0;
+                        }
+
+                        return (
+                        <div key={i} className={`reminder-card ${type === "owe" ? "reminder-red" : "reminder-green"}`}>
                           <div className="d-flex gap-3 align-items-start">
-                            <div style={{ fontSize: 24 }}>{rem.includes("owe") ? "🔔" : "💸"}</div>
+                            <div style={{ fontSize: 24 }}>{type === "owe" ? "🔔" : "💸"}</div>
                             <div className="flex-grow-1">
-                              <div style={{ fontWeight: 600 }}>{rem}</div>
+                              <div style={{ fontWeight: 600 }}>
+                                {type === "owe" ? `You owe ${name} ${fmt(amount)}` : `${name} owes you ${fmt(amount)}`}
+                              </div>
                             </div>
                             <button className="btn-close-reminder">×</button>
                           </div>
                         </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

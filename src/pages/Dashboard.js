@@ -163,7 +163,7 @@ export default function Dashboard() {
           <div className="col-md-6">
             <div className="card-soft h-100">
               <div className="label-muted mb-2">Total you owe</div>
-              <div className="amount amount-red mb-3">{fmt(owe)}</div>
+              <div className="amount-lg mb-3" style={{ color: "var(--danger)" }}>{fmt(owe)}</div>
               <div className="d-flex gap-2 mt-auto">
                 <button className="btn-green" onClick={() => setShowSettleModal(true)}>Settle Now</button>
               </div>
